@@ -2,26 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 6%;
+    --foreground: 36 33% 92%;
+    --card: 0 0% 10%;
+    --card-foreground: 36 33% 92%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 36 33% 92%;
+    --primary: 22 100% 50%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 36 33% 92%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 22 100% 50%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 22 100% 50%;
+    --radius: 0.375rem;
+    --chart-1: 22 100% 50%;
+    --chart-2: 36 33% 92%;
+    --chart-3: 0 0% 55%;
+    --chart-4: 22 70% 40%;
+    --chart-5: 0 0% 14%;
+  }
+
+  .light {
+    --background: 36 33% 96%;
+    --foreground: 0 0% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+    --primary: 22 100% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 36 20% 90%;
+    --secondary-foreground: 0 0% 8%;
+    --muted: 36 20% 90%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 22 100% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 36 15% 82%;
+    --input: 36 15% 82%;
+    --ring: 22 100% 48%;
+    --chart-1: 22 100% 48%;
+    --chart-2: 0 0% 8%;
+    --chart-3: 0 0% 40%;
+    --chart-4: 22 70% 38%;
+    --chart-5: 36 20% 90%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@layer components {
+  .mf-brand-char {
+    display: inline-block;
+    transition:
+      transform 220ms ease,
+      opacity 220ms ease,
+      color 220ms ease,
+      letter-spacing 220ms ease,
+      filter 220ms ease;
+    will-change: transform, opacity, filter;
+  }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .mf-brand-char--upper {
+    transform: translateY(-0.02em) scale(1.03);
+    letter-spacing: 0.03em;
+    filter: saturate(1.08);
+  }
+
+  .mf-brand-char--lower {
+    transform: translateY(0) scale(0.98);
+    letter-spacing: 0.01em;
+    opacity: 0.92;
+    filter: saturate(0.94);
   }
 }
+
+

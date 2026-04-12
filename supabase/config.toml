@@ -1,0 +1,24 @@
+# Supabase CLI Configuration
+
+[project]
+account_id = ""
+database_password = "your-password"
+db_url = ""
+default_region = "eu-central-1"
+functions_verify_jwt = true
+
+[api]
+enabled = true
+max_body_size = "20MiB"
+cors_allow_list = ["*"]
+
+[realtime]
+enabled = true
+max_bytes_per_second = 1048576
+
+[analytics]
+enabled = true
+
+[auth]
+enable_signup = true
+ignore_migrations = []

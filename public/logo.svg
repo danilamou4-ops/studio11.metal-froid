@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 737 737">
+  <!-- Row 1 -->
+  <rect x="0"   y="0"   width="178" height="178" fill="#d9a78c"/>
+  <rect x="184" y="0"   width="178" height="178" fill="#e9955d"/>
+  <rect x="368" y="0"   width="178" height="178" fill="#eb681d"/>
+  <rect x="553" y="0"   width="178" height="178" fill="#d9a78c"/>
+  <!-- Row 2 -->
+  <rect x="0"   y="184" width="178" height="178" fill="#c9b7a9"/>
+  <rect x="184" y="184" width="178" height="178" fill="#d3783d"/>
+  <rect x="368" y="184" width="178" height="178" fill="#eb681d"/>
+  <rect x="553" y="184" width="178" height="178" fill="#eb681d"/>
+  <!-- Row 3 -->
+  <rect x="0"   y="368" width="178" height="178" fill="#eb681d"/>
+  <rect x="184" y="368" width="178" height="178" fill="#eb681d"/>
+  <rect x="368" y="368" width="178" height="178" fill="#eb681d"/>
+  <rect x="553" y="368" width="178" height="178" fill="#d9a78c"/>
+  <!-- Row 4 -->
+  <rect x="0"   y="553" width="178" height="178" fill="#d9a78c"/>
+  <rect x="184" y="553" width="178" height="178" fill="#eb681d"/>
+  <rect x="368" y="553" width="178" height="178" fill="#e9955d"/>
+  <rect x="553" y="553" width="178" height="178" fill="#eb681d"/>
+</svg>
