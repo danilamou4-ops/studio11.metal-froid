@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { enrichPlaylistById } from "@/lib/enrichment/enrichPlaylist";
+import { getAuthenticatedUser } from "@/lib/auth/route-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getGovernanceControlState } from "@/server/services/contribution/governanceControls";
 import { logGovernanceTransition, updateContributionStatus } from "@/server/services/contribution/updateContributionStatus";
@@ -124,6 +125,14 @@ function qualityGate(input: QualityGateInput): { pass: boolean; reasons: string[
 }
 export async function POST(request: Request) {
   try {
+    const { user } = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Authentication required." } },
+        { status: 401 },
+      );
+    }
+
     const json = await request.json();
     const parsed = requestSchema.safeParse(json);
 
@@ -381,6 +390,7 @@ export async function POST(request: Request) {
           avg_acousticness: parsed.data.avgAcousticness ?? null,
           avg_speechiness: parsed.data.avgSpeechiness ?? null,
           contribution_status: "draft",
+          submitted_by: user.id,
           is_active: false,
           quality_review_queue: true,
           pending_enrichment: true,
@@ -464,7 +474,7 @@ export async function POST(request: Request) {
         action: "auto_approved",
         status: "active",
         triggeredBy: "system",
-        actorUserId: null,
+        actorUserId: user.id,
         reasons: gate.reasons,
       });
 
@@ -496,7 +506,7 @@ export async function POST(request: Request) {
       action: "sent_to_review",
       status: "draft",
       triggeredBy: "system",
-      actorUserId: null,
+      actorUserId: user.id,
       reasons: gate.reasons,
     });
 

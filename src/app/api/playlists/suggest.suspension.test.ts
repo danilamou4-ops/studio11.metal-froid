@@ -2,9 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getGovernanceControlStateMock = vi.fn();
 const enrichPlaylistByIdMock = vi.fn();
+const getAuthenticatedUserMock = vi.fn();
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => ({})),
+}));
+
+vi.mock('@/lib/auth/route-auth', () => ({
+  getAuthenticatedUser: getAuthenticatedUserMock,
 }));
 
 vi.mock('@/server/services/contribution/governanceControls', () => ({
@@ -22,6 +27,9 @@ vi.mock('@/server/services/contribution/updateContributionStatus', () => ({
 
 vi.mock('@/server/services/playlists/urlDedup', () => ({
   buildSpotifyUrlFingerprint: vi.fn(() => 'mock_fingerprint'),
+    buildPlatformUrlFingerprint: vi.fn(() => 'mock_platform_fingerprint'),
+    detectPlatform: vi.fn(() => 'spotify'),
+    normalizePlatformUrl: vi.fn((url: string) => url),
   detectPlaylistDuplicates: vi.fn(() => ({
     duplicateConflict: false,
     hasExactDuplicate: false,
@@ -36,6 +44,7 @@ describe('POST /api/playlists/suggest (governance suspension)', () => {
   beforeEach(() => {
     getGovernanceControlStateMock.mockReset();
     enrichPlaylistByIdMock.mockReset();
+      getAuthenticatedUserMock.mockResolvedValue({ user: { id: 'user-123', email: 'user@test.com' } });
   });
 
   it('returns 503 when contributions are suspended', async () => {

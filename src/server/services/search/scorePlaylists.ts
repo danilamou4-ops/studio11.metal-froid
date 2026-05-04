@@ -10,7 +10,7 @@ const BPM_RANGE = 140; // 60–200 BPM → [0, 1]
  * Construit le vecteur de requête à partir des features audio.
  * Retourne null si moins de 4 des 6 dimensions sont disponibles.
  */
-function buildQueryVector(features: CanonicalAudioFeatures): number[] | null {
+export function buildQueryVector(features: CanonicalAudioFeatures): number[] | null {
   const bpmNorm =
     features.bpm != null
       ? Math.max(0, Math.min(1, (features.bpm - BPM_MIN) / BPM_RANGE))
@@ -32,7 +32,7 @@ function buildQueryVector(features: CanonicalAudioFeatures): number[] | null {
   return dims.map((d) => d ?? 0.5);
 }
 
-type PlaylistRow = {
+export type PlaylistRow = {
   id: string;
   name: string;
   platform_url: string;
@@ -148,7 +148,7 @@ function getGenreTemplate(genreLabel: string | null): GenreAudioTemplate | null 
 type ScoreMode = "direct" | "genre-template" | "popularity";
 
 /** Score sémantique : overlap entre les aliases du genre détecté et les tags Last.fm de la playlist */
-function tagOverlapScore(userAliases: string[], playlistTags: string[]): number {
+export function tagOverlapScore(userAliases: string[], playlistTags: string[]): number {
   if (userAliases.length === 0 || playlistTags.length === 0) return 0;
   const corpus = playlistTags.map((t) => t.toLowerCase());
   let matches = 0;
@@ -163,7 +163,7 @@ function tagOverlapScore(userAliases: string[], playlistTags: string[]): number 
  * Pénalise les playlists dont le corpus de tags est connu mais totalement incompatible
  * avec le genre détecté du morceau. Ex : classique sur playlist rap → 0.35
  */
-function genreMismatchMultiplier(
+export function genreMismatchMultiplier(
   userPresetId: string | null,
   userAliases: string[],
   playlistTags: string[],
@@ -192,7 +192,7 @@ function genreMismatchMultiplier(
   return 1;
 }
 
-function scoreOne(
+export function scoreOne(
   features: CanonicalAudioFeatures,
   playlist: PlaylistRow,
   userPresetId: string | null,
@@ -376,7 +376,7 @@ async function hydrateTrustSignals<T extends {
     .in("id", playlistIds);
 
   if (trustError) {
-    console.warn("Unable to hydrate trust signals on search results:", trustError.message);
+    console.error("Unable to hydrate trust signals on search results:", trustError.message);
     return results;
   }
 

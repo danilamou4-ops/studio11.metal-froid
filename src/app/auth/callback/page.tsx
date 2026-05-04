@@ -3,13 +3,11 @@
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+// Handles OAuth code exchange (e.g. password reset redirect from Supabase).
+// Magic link flow has been removed — only email+password auth is supported.
 export default function AuthCallbackPage() {
   useEffect(() => {
     const supabase = createClient();
-
-    // Avec implicit flow, Supabase redirige vers :
-    //   /auth/callback#access_token=XXX&refresh_token=XXX&type=magiclink
-    // getSession() détecte automatiquement le hash et persiste la session.
     supabase.auth.getSession().then(({ data: { session } }) => {
       window.location.href = session ? "/" : "/login?error=true";
     });

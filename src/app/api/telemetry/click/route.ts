@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export const dynamic = "force-dynamic";
+
 const clickSchema = z.object({
   playlistId: z.string().uuid(),
   clickedUrl: z.string().url(),

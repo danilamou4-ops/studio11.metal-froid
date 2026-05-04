@@ -45,7 +45,7 @@ async function syncPlaylistFeedbackSignals(supabase: ReturnType<typeof createAdm
     .eq("playlist_id", playlistId);
 
   if (feedbackError) {
-    console.warn("Failed to aggregate playlist feedback signals:", feedbackError.message);
+    console.error("Failed to aggregate playlist feedback signals:", feedbackError.message);
     return;
   }
 
@@ -57,7 +57,7 @@ async function syncPlaylistFeedbackSignals(supabase: ReturnType<typeof createAdm
     .maybeSingle();
 
   if (playlistError) {
-    console.warn("Failed to read playlist quality snapshot:", playlistError.message);
+    console.error("Failed to read playlist quality snapshot:", playlistError.message);
     return;
   }
 
@@ -76,7 +76,7 @@ async function syncPlaylistFeedbackSignals(supabase: ReturnType<typeof createAdm
     .eq("id", playlistId);
 
   if (updateError) {
-    console.warn("Failed to persist playlist feedback signals:", updateError.message);
+    console.error("Failed to persist playlist feedback signals:", updateError.message);
   }
 }
 

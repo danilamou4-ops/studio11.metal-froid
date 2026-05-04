@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { BarChart3, Check, MessageSquare, Shield, ThumbsDown, ThumbsUp, Users, Zap } from "lucide-react";
 
-import { AdminContributionPanel } from "@/components/AdminContributionPanel";
+import dynamic from "next/dynamic";
+
+const AdminContributionPanel = dynamic(
+  () =>
+    import("@/components/AdminContributionPanel").then((m) => ({
+      default: m.AdminContributionPanel,
+    })),
+  { loading: () => <div className="animate-pulse h-32 bg-muted rounded" /> },
+);
 import { AccountSettingsCard } from "@/components/AccountSettingsCard";
 import { ViewState } from "@/components/ui/view-state";
 import { useTeamRole } from "@/features/auth/useTeamRole";

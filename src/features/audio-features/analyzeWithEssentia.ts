@@ -17,6 +17,7 @@
  */
 
 import type { CanonicalAudioFeatures } from "@/features/audio-features/types";
+import type { EssentiaInstance } from "@/types/essentia-instance";
 
 function clamp01(v: number): number {
   return Math.max(0, Math.min(1, v));
@@ -29,8 +30,7 @@ function computeRms(samples: Float32Array): number {
 }
 
 // Singleton : on ne charge le WASM qu'une seule fois par session.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let essentiaInstance: any | null = null;
+let essentiaInstance: EssentiaInstance | null = null;
 
 async function getEssentia() {
   if (essentiaInstance) return essentiaInstance;
@@ -73,7 +73,7 @@ async function getEssentia() {
     locateFile: (file: string) => `/essentiajs/${file}`,
   });
 
-  essentiaInstance = new EssentiaClass(wasm);
+  essentiaInstance = new EssentiaClass(wasm) as EssentiaInstance;
   return essentiaInstance;
 }
 
@@ -95,8 +95,7 @@ export async function analyzeWithEssentia(
   if (typeof window === "undefined") return null;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const essentia: any = await getEssentia();
+    const essentia = await getEssentia() as EssentiaInstance;
 
     const signal = essentia.arrayToVector(samples);
 
@@ -208,7 +207,7 @@ export async function analyzeWithEssentia(
       method: "essentia",
     };
   } catch (err) {
-    console.warn("[Essentia] Analyse échouée, fallback heuristique :", err);
+    console.error("[Essentia] Analyse échouée, fallback heuristique :", err);
     return null;
   }
 }

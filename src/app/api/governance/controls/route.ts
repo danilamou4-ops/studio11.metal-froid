@@ -8,6 +8,8 @@ import {
   setContributionSuspension,
 } from '@/server/services/contribution/governanceControls';
 
+export const dynamic = 'force-dynamic';
+
 const payloadSchema = z.object({
   suspendContributions: z.boolean(),
   reason: z.string().trim().max(500).optional(),

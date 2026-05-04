@@ -10,74 +10,44 @@ export async function GET() {
     const supabase = createAdminClient();
     await markOverdueReviewAlerts(supabase);
 
-    // Total active playlists
-    const { count: playlists, error: e1 } = await supabase
-      .from("playlists")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true);
+    const [
+      { count: playlists, error: e1 },
+      { count: vectorized, error: e2 },
+      { data: curatorRows, error: e3 },
+      { count: upvotes, error: e4 },
+      { count: downvotes, error: e5 },
+      { count: reviews, error: e6 },
+      { count: qualityTicketsOpen, error: e7 },
+      { data: playlistQualityRows, error: e8 },
+      { count: borderlineQueue, error: e9 },
+      { count: overdueManualReviews, error: e10 },
+    ] = await Promise.all([
+      // Total active playlists
+      supabase.from("playlists").select("*", { count: "exact", head: true }).eq("is_active", true),
+      // Playlists with audio embedding
+      supabase.from("playlists").select("*", { count: "exact", head: true }).not("audio_embedding", "is", null),
+      // Distinct curators among active playlists
+      supabase.from("playlists").select("curator_id").eq("is_active", true),
+      // Community votes
+      supabase.from("community_feedback").select("id", { count: "exact", head: true }).eq("vote", 1),
+      supabase.from("community_feedback").select("id", { count: "exact", head: true }).eq("vote", -1),
+      supabase.from("community_feedback").select("id", { count: "exact", head: true }).not("review_text", "is", null),
+      // Quality tickets
+      supabase.from("quality_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_review", "escalated"]),
+      // Quality gate snapshots
+      supabase.from("playlists").select("id,quality_gate_snapshot").eq("is_active", true).limit(1000),
+      // Governance queues
+      supabase.from("playlists").select("id", { count: "exact", head: true }).eq("contribution_status", "draft").eq("quality_review_queue", true),
+      supabase.from("playlists").select("id", { count: "exact", head: true }).eq("contribution_status", "draft").eq("quality_review_queue", true).lt("manual_review_due_at", new Date().toISOString()),
+    ]);
 
-    // Playlists with audio embedding
-    const { count: vectorized, error: e2 } = await supabase
-      .from("playlists")
-      .select("*", { count: "exact", head: true })
-      .not("audio_embedding", "is", null);
-
-    // Distinct curators among active playlists
-    const { data: curatorRows, error: e3 } = await supabase
-      .from("playlists")
-      .select("curator_id")
-      .eq("is_active", true);
-
-    if (e1 ?? e2 ?? e3) {
+    if (e1 ?? e2 ?? e3 ?? e4 ?? e5 ?? e6 ?? e7 ?? e8 ?? e9 ?? e10) {
       return NextResponse.json({ error: "DB error" }, { status: 500 });
     }
 
     const curators = new Set(
       (curatorRows ?? []).map((r) => r.curator_id).filter(Boolean),
     ).size;
-
-    const { count: upvotes, error: e4 } = await supabase
-      .from("community_feedback")
-      .select("id", { count: "exact", head: true })
-      .eq("vote", 1);
-
-    const { count: downvotes, error: e5 } = await supabase
-      .from("community_feedback")
-      .select("id", { count: "exact", head: true })
-      .eq("vote", -1);
-
-    const { count: reviews, error: e6 } = await supabase
-      .from("community_feedback")
-      .select("id", { count: "exact", head: true })
-      .not("review_text", "is", null);
-
-    const { count: qualityTicketsOpen, error: e7 } = await supabase
-      .from("quality_tickets")
-      .select("id", { count: "exact", head: true })
-      .in("status", ["open", "in_review", "escalated"]);
-
-    const { data: playlistQualityRows, error: e8 } = await supabase
-      .from("playlists")
-      .select("id,quality_gate_snapshot")
-      .eq("is_active", true)
-      .limit(1000);
-
-    const { count: borderlineQueue, error: e9 } = await supabase
-      .from("playlists")
-      .select("id", { count: "exact", head: true })
-      .eq("contribution_status", "draft")
-      .eq("quality_review_queue", true);
-
-    const { count: overdueManualReviews, error: e10 } = await supabase
-      .from("playlists")
-      .select("id", { count: "exact", head: true })
-      .eq("contribution_status", "draft")
-      .eq("quality_review_queue", true)
-      .lt("manual_review_due_at", new Date().toISOString());
-
-    if (e4 ?? e5 ?? e6 ?? e7 ?? e8 ?? e9 ?? e10) {
-      return NextResponse.json({ error: "DB error" }, { status: 500 });
-    }
 
     let riskPlaylists = 0;
     for (const row of playlistQualityRows ?? []) {
