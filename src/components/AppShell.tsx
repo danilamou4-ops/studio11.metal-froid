@@ -204,14 +204,14 @@ export function AppShell() {
 
         {/* ZONE 2 — Nav tabs bar (44px) */}
         <div className="border-b border-border bg-background">
-          <nav className="overflow-x-auto">
-            <ul className="flex h-11 items-end justify-center gap-0">
+          <nav className="overflow-x-auto px-1 md:px-0">
+            <ul className="flex h-11 min-w-full w-max items-end justify-start gap-0 md:justify-center">
               {NAV_ITEMS.map(({ key, label }) => (
                 <li key={key} className="shrink-0">
                   <button
                     type="button"
                     onClick={() => handleTabChange(key)}
-                    className={`whitespace-nowrap px-4 pb-2.5 pt-2 text-sm font-medium transition-colors ${
+                    className={`whitespace-nowrap px-3 pb-2.5 pt-2 text-sm font-medium transition-colors md:px-4 ${
                       tab === key
                         ? "border-b-2 border-primary text-primary"
                         : "text-muted-foreground hover:text-foreground"

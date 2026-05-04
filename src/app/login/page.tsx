@@ -6,8 +6,42 @@
 "use client";
 
 import Image from "next/image";
+import localFont from "next/font/local";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+
+const gimbalExtended = localFont({
+  src: "../fonts/GimbalExtended-Regular.ttf",
+  display: "swap",
+});
+
+const BRAND_LABEL = "Métal Froid";
+const LETTER_INDICES = BRAND_LABEL
+  .split("")
+  .map((char, index) => (/[a-zA-ZÀ-ÿ]/.test(char) ? index : -1))
+  .filter((index) => index >= 0);
+
+function getInitialBrandCasePattern(label: string) {
+  return label.split("").map((char) => {
+    if (!/[a-zA-ZÀ-ÿ]/.test(char)) return false;
+    return (
+      char === char.toLocaleUpperCase("fr-FR") &&
+      char !== char.toLocaleLowerCase("fr-FR")
+    );
+  });
+}
+
+function mutateBrandCasePattern(pattern: boolean[]) {
+  const nextPattern = [...pattern];
+  const mutationCount = Math.random() > 0.72 ? 2 : 1;
+  const shuffledIndices = [...LETTER_INDICES].sort(() => Math.random() - 0.5);
+
+  for (const index of shuffledIndices.slice(0, mutationCount)) {
+    nextPattern[index] = !nextPattern[index];
+  }
+
+  return nextPattern;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -16,12 +50,28 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [brandCasePattern, setBrandCasePattern] = useState(() =>
+    getInitialBrandCasePattern(BRAND_LABEL),
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("error") === "unauthorized") {
       setError("Accès non autorisé. Contacte l'administrateur.");
     }
+  }, []);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    const interval = window.setInterval(() => {
+      setBrandCasePattern((currentPattern) =>
+        mutateBrandCasePattern(currentPattern),
+      );
+    }, 900);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -65,8 +115,35 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
           <Image src="/logo.svg" alt="Métal Froid" width={32} height={32} priority />
-          <h1 className="font-sans text-xl font-bold tracking-wider text-foreground">
-            MÉTAL FROID
+          <h1
+            aria-label={BRAND_LABEL}
+            className={`${gimbalExtended.className} whitespace-nowrap text-xl font-bold tracking-wider text-foreground`}
+          >
+            {BRAND_LABEL.split("").map((char, index) => {
+              const isLetter = /[a-zA-ZÀ-ÿ]/.test(char);
+              const isUpper = brandCasePattern[index];
+              const displayChar = !isLetter
+                ? char
+                : isUpper
+                  ? char.toLocaleUpperCase("fr-FR")
+                  : char.toLocaleLowerCase("fr-FR");
+
+              return (
+                <span
+                  key={`${char}-${index}`}
+                  aria-hidden="true"
+                  className={`mf-brand-char ${
+                    isLetter
+                      ? isUpper
+                        ? "mf-brand-char--upper"
+                        : "mf-brand-char--lower"
+                      : ""
+                  }`}
+                >
+                  {displayChar}
+                </span>
+              );
+            })}
           </h1>
           <p className="text-sm text-muted-foreground">Accès réservé</p>
         </div>
