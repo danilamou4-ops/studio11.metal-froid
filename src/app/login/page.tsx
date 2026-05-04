@@ -44,10 +44,12 @@ function mutateBrandCasePattern(pattern: boolean[]) {
 }
 
 export default function LoginPage() {
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [brandCasePattern, setBrandCasePattern] = useState(() =>
@@ -78,18 +80,54 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
+    setResetSent(false);
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    if (mode === "login") {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      setLoading(false);
+      if (authError) {
+        setError("Email ou mot de passe incorrect.");
+      } else {
+        window.location.href = "/";
+      }
+      return;
+    }
+
+    const emailRedirectTo =
+      (process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin) + "/auth/callback";
+
+    const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: { emailRedirectTo },
     });
 
     setLoading(false);
-    if (authError) {
-      setError("Email ou mot de passe incorrect.");
+    if (signUpError) {
+      const normalized = signUpError.message.toLowerCase();
+      if (normalized.includes("signups not allowed") || normalized.includes("signup disabled")) {
+        setError(
+          "Les inscriptions sont désactivées sur ce projet Supabase. Active-les dans Authentication > Providers > Email.",
+        );
+      } else if (
+        normalized.includes("error sending confirmation email") ||
+        normalized.includes("error sending email")
+      ) {
+        setError(
+          "Impossible d'envoyer l'email de confirmation. Vérifie la configuration SMTP/Resend dans Supabase, ou désactive temporairement la confirmation email dans Authentication > Providers > Email.",
+        );
+      } else {
+        setError(signUpError.message);
+      }
     } else {
-      window.location.href = "/";
+      setSuccess("Compte créé. Vérifie ta boîte mail pour confirmer l'inscription.");
+      setMode("login");
     }
   }
 
@@ -100,6 +138,7 @@ export default function LoginPage() {
     }
     setResetLoading(true);
     setError(null);
+    setSuccess(null);
 
     const supabase = createClient();
     const redirectTo =
@@ -148,9 +187,50 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground">Accès réservé</p>
         </div>
 
+        <div className="mb-5 grid grid-cols-2 rounded-[var(--radius)] border border-border p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("login");
+              setError(null);
+              setSuccess(null);
+              setResetSent(false);
+            }}
+            className={`rounded-[calc(var(--radius)-2px)] px-3 py-2 text-sm font-medium transition-colors ${
+              mode === "login"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Connexion
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signup");
+              setError(null);
+              setSuccess(null);
+              setResetSent(false);
+            }}
+            className={`rounded-[calc(var(--radius)-2px)] px-3 py-2 text-sm font-medium transition-colors ${
+              mode === "signup"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Inscription
+          </button>
+        </div>
+
         {error && (
           <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-5 rounded-lg border border-emerald-800 bg-emerald-950 px-4 py-3 text-sm text-emerald-300">
+            {success}
           </div>
         )}
 
@@ -198,20 +278,28 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-[var(--radius)] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Connexion…" : "Se connecter"}
+            {loading
+              ? mode === "login"
+                ? "Connexion…"
+                : "Création…"
+              : mode === "login"
+                ? "Se connecter"
+                : "Créer un compte"}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            disabled={resetLoading}
-            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
-          >
-            {resetLoading ? "Envoi…" : "Mot de passe oublié ?"}
-          </button>
-        </div>
+        {mode === "login" && (
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={resetLoading}
+              className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+            >
+              {resetLoading ? "Envoi…" : "Mot de passe oublié ?"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
