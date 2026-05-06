@@ -156,7 +156,7 @@ export function TrackFeatureTester() {
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="file"
-            accept="audio/*"
+            accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm"
             aria-label="Sélectionner un fichier audio"
             onChange={(event) => setLocalFile(event.target.files?.[0] ?? null)}
             className="block flex-1 text-sm text-foreground"

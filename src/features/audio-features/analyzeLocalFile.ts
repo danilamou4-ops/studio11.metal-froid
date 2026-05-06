@@ -141,11 +141,36 @@ function downmixToMono(channelData: Float32Array[]): Float32Array {
 }
 
 export async function analyzeLocalAudioFile(file: File): Promise<LocalAnalysisResult> {
+  type WebkitWindow = Window & {
+    webkitAudioContext?: typeof AudioContext;
+  };
+
+  const AudioContextCtor =
+    window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
+
+  if (!AudioContextCtor) {
+    throw new Error(
+      "Ton navigateur ne supporte pas l'analyse audio locale. Essaie avec Safari/Chrome à jour.",
+    );
+  }
+
   const arrayBuffer = await file.arrayBuffer();
-  const audioContext = new AudioContext();
+  const audioContext = new AudioContextCtor();
 
   try {
-    const buffer = await audioContext.decodeAudioData(arrayBuffer);
+    if (audioContext.state === "suspended") {
+      await audioContext.resume();
+    }
+
+    let buffer: AudioBuffer;
+    try {
+      buffer = await audioContext.decodeAudioData(arrayBuffer);
+    } catch {
+      throw new Error(
+        "Format audio non pris en charge sur cet appareil. Utilise de préférence MP3, WAV ou M4A.",
+      );
+    }
+
     const channels = Array.from({ length: buffer.numberOfChannels }, (_, i) => buffer.getChannelData(i));
     const mono = downmixToMono(channels);
 
